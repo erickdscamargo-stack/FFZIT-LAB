@@ -1,0 +1,62 @@
+
+import math
+
+
+class AntiCheatDemo:
+
+    def __init__(self, max_speed=500):
+        self.max_speed = max_speed
+        self.previous = {}
+
+    def analyze(self, player_id, x, y, timestamp):
+
+        values = (x, y, timestamp)
+
+        if not all(
+            math.isfinite(float(v))
+            for v in values
+        ):
+            raise ValueError("Dados inválidos")
+
+        if timestamp < 0:
+            raise ValueError("Tempo inválido")
+
+        current = (float(x), float(y), float(timestamp))
+        previous = self.previous.get(player_id)
+
+        self.previous[player_id] = current
+
+        if previous is None:
+            return {
+                "suspicious": False,
+                "speed": 0,
+                "reason": "Primeira amostra"
+            }
+
+        old_x, old_y, old_time = previous
+        elapsed = timestamp - old_time
+
+        if elapsed <= 0:
+            return {
+                "suspicious": True,
+                "speed": None,
+                "reason": "Tempo inválido"
+            }
+
+        distance = math.hypot(
+            x - old_x,
+            y - old_y
+        )
+
+        speed = distance / elapsed
+
+        return {
+            "suspicious": speed > self.max_speed,
+            "speed": round(speed, 2),
+            "reason": (
+                "Velocidade suspeita"
+                if speed > self.max_speed
+                else "Movimento normal"
+            )
+        }
+        
