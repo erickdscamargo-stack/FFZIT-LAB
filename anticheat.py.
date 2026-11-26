@@ -18,12 +18,13 @@ class AntiCheatDemo:
         ):
             raise ValueError("Dados inválidos")
 
-        if timestamp < 0:
-            raise ValueError("Tempo inválido")
+        current = (
+            float(x),
+            float(y),
+            float(timestamp)
+        )
 
-        current = (float(x), float(y), float(timestamp))
         previous = self.previous.get(player_id)
-
         self.previous[player_id] = current
 
         if previous is None:
@@ -43,12 +44,10 @@ class AntiCheatDemo:
                 "reason": "Tempo inválido"
             }
 
-        distance = math.hypot(
+        speed = math.hypot(
             x - old_x,
             y - old_y
-        )
-
-        speed = distance / elapsed
+        ) / elapsed
 
         return {
             "suspicious": speed > self.max_speed,
